@@ -1,7 +1,22 @@
 ---
 layout: default
-title: Home
+title: Notebooks 
 ---
 
-<h1>{{ "Hello World!" | downcase }}</h1>
+<h1>Notebooks</h1>
+<h3>by Elias Kalamaras</h3>
+
+The following are personal notes about various subjects of interest to me, such as statistics and probability. This site was inspired by <a href="https://matt.might.net/articles"/>Matt Might's blog</a> and <a href="https://www.refsmmat.com/notebooks/">Alex Reinhart's notebooks</a>; its purpose is first to just write down a few thoughts about some subject I was interested at some time, so as not to forget them. If you find some of these notes interesting too, that would be great.
+
+<ul>
+	{% for post in site.posts %}
+		<li>
+			<p>
+				<a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a>,
+				{{ post.date | date: "%d %b, %Y" }}
+			</p>
+			{% comment %} {{ post.excerpt }} {% endcomment %}
+		</li>
+	{% endfor %}
+</ul>
 
