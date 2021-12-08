@@ -1,0 +1,14 @@
+{
+	"version": 3,
+	"file": "styles.css",
+	"sources": [
+		"styles.scss",
+		"_sass/main.scss"
+	],
+	"sourcesContent": [
+		"@import \"main\";\n\n",
+		"body {\n\tmargin: auto;\n\tmax-width: 700px;\n\tfont-size: 18px;\n\tline-height: 1.6;\n}\n\n.current {\n\tcolor: green;\n}\n\npre.highlight {\n\tbackground-color: #F6F6F6;\n\tpadding: 5px;\n\tborder: 1px solid lightgray;\n\tborder-radius: 5px;\n\tfont-size: 16px;\n}\n\ncode.highlighter-rouge {\n\tfont-size: 18px;\n}\n\n"
+	],
+	"names": [],
+	"mappings": "ACAA,AAAA,IAAI,CAAC,EACJ,MAAM,EAAE,IAAI,EACZ,SAAS,EAAE,KAAK,EAChB,SAAS,EAAE,IAAI,EACf,WAAW,EAAE,GAAG,GAChB;;AAED,AAAA,QAAQ,CAAC,EACR,KAAK,EAAE,KAAK,GACZ;;AAED,AAAA,GAAG,AAAA,UAAU,CAAC,EACb,gBAAgB,EAAE,OAAO,EACzB,OAAO,EAAE,GAAG,EACZ,MAAM,EAAE,mBAAmB,EAC3B,aAAa,EAAE,GAAG,EAClB,SAAS,EAAE,IAAI,GACf;;AAED,AAAA,IAAI,AAAA,kBAAkB,CAAC,EACtB,SAAS,EAAE,IAAI,GACf"
+}

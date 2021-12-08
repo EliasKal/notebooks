@@ -1,0 +1,213 @@
+I"C-<p>I have been using <a href="https://www.vim.org/">Vim</a> as a text editor for some time now and today I had a moment of delight when I finally started to understand its power. I managed to perform a tedious task effectively using Vim macros and registers!</p>
+
+<p>I was writing a function in JavaScript to generate a D3 plot, following <a href="https://bost.ocks.org/mike/chart/">Mike Bostock’s recommendation</a> for reusable charts. The code was roughly at the following state:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>function exampleGlyph() {
+
+	// Glyph attributes
+	let baseColor = "gray",
+		lineHeight = 8,
+		A = d =&gt; 0,
+		B = d =&gt; 10,
+		C = d =&gt; 20,
+		D = d =&gt; 30,
+		E = d =&gt; 40,
+		F = d =&gt; 50,
+		height = d =&gt; 10,
+		color = d =&gt; "lightsteelblue"
+	
+	function chart(selection) {
+		// ...
+	}
+
+	chart.baseColor = function(value) {
+		if (!arguments.length) return baseColor
+		baseColor = value
+		return chart
+	}
+
+	return chart
+}
+</code></pre></div></div>
+
+<p>The important part is that there are several (ten) attributes at the beginning of the <code class="language-plaintext highlighter-rouge">exampleGlyph</code> function, describing various attributes of the chart, such as <code class="language-plaintext highlighter-rouge">baseColor</code> and <code class="language-plaintext highlighter-rouge">lineHeight</code>. To make them accessible from outside the function, we must create accessor functions, one for each attribute. The accessor function for the first atttibute, <code class="language-plaintext highlighter-rouge">baseColor</code>, has already been added towards the end of the function:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	chart.baseColor = function(value) {
+		if (!arguments.length) return baseColor
+		baseColor = value
+		return chart
+	}
+</code></pre></div></div>
+
+<p>However, we need to create accessor functions for all ten attributes. In my previous attempts for other charts, I had just copied the accessor function for an attribute and manually replaced the name of the attribute (appearing in three places), with the name of the new attribute. This was a time consuming process.</p>
+
+<p>Now I decided to use Vim macros to do this. I would perform the replacements once and then repeat the process for all attributes. This is how I proceeded.</p>
+
+<p>First, I copied all attributes at the bottom of the function, above the accessor function.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	// ...
+
+	let baseColor = "gray",
+		lineHeight = 8,
+		A = d =&gt; 0,
+		B = d =&gt; 10,
+		C = d =&gt; 20,
+		D = d =&gt; 30,
+		E = d =&gt; 40,
+		F = d =&gt; 50,
+		height = d =&gt; 10,
+		color = d =&gt; "lightsteelblue"
+
+	chart.baseColor = function(value) {
+		if (!arguments.length) return baseColor
+		baseColor = value
+		return chart
+	}
+
+	return chart
+}
+</code></pre></div></div>
+
+<p>I then yanked the accessor function definition to the <code class="language-plaintext highlighter-rouge">t</code> register (<code class="language-plaintext highlighter-rouge">t</code> for “template”). This can be done by selecting it (and the following newline, for clarity) in visual mode and executing the following:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>"ty
+</code></pre></div></div>
+
+<p>This yanked definition will work as a template for the other definitions. Then I moved the cursor to the beginning of the <code class="language-plaintext highlighter-rouge">lineHeight = 8,</code> line (i.e. at the <code class="language-plaintext highlighter-rouge">l</code> character), which, for the sake of this example, let’s say that is in line 85. Then I started recording the macro, at register <code class="language-plaintext highlighter-rouge">a</code>:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>qa
+</code></pre></div></div>
+
+<p>I then typed the sequence of commands that would take the word <code class="language-plaintext highlighter-rouge">lineHeight</code> and create a copy of the accessor function template, with the word <code class="language-plaintext highlighter-rouge">baseColor</code> replaced by <code class="language-plaintext highlighter-rouge">lineHeight</code>. This is the (very simple) sequence used:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>"fywG3k"tp2wdw"fPj$bdw"fpj0wdw"fP85Gdd
+</code></pre></div></div>
+
+<p>Piece of cake. Then I pressed</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>q
+</code></pre></div></div>
+
+<p>to stop the recording. The macro was ready to use!</p>
+
+<p>OK, let’s see what this sequence means, piece by piece.</p>
+
+<ul>
+  <li><strong><code class="language-plaintext highlighter-rouge">"fyw</code></strong>: Yank a word in register <code class="language-plaintext highlighter-rouge">f</code> (<code class="language-plaintext highlighter-rouge">f</code> for “field”). This is the name of the attribute. We will use the <code class="language-plaintext highlighter-rouge">f</code> register whenever we need to paste it at the right position.</li>
+  <li><strong><code class="language-plaintext highlighter-rouge">G3k</code></strong>: Move to the end of the file and then three lines up, to go just above <code class="language-plaintext highlighter-rouge">return chart</code>, where we will put the next accessor function definition.</li>
+  <li><strong><code class="language-plaintext highlighter-rouge">"tp</code></strong>: Paste the contents of the <code class="language-plaintext highlighter-rouge">t</code> register, i.e. the accessor function template.</li>
+  <li><strong><code class="language-plaintext highlighter-rouge">2wdw</code></strong>: Move two words to the right, i.e. at the beginning of <code class="language-plaintext highlighter-rouge">baseColor</code>, and remove that word. This does not modify either of the <code class="language-plaintext highlighter-rouge">f</code> or <code class="language-plaintext highlighter-rouge">t</code> registers that we use.</li>
+  <li><strong><code class="language-plaintext highlighter-rouge">"fP</code></strong>: Paste the contents of the <code class="language-plaintext highlighter-rouge">f</code> register, i.e. the attribute name, before the cursor, i.e. right after the <code class="language-plaintext highlighter-rouge">.</code>.</li>
+  <li><strong><code class="language-plaintext highlighter-rouge">j$b</code></strong>: Move to the line below, to the end of the line and to the beginning of the last word, i.e. to the beginning of the next occurrence of <code class="language-plaintext highlighter-rouge">baseColor</code>.</li>
+  <li><strong><code class="language-plaintext highlighter-rouge">dw</code></strong>: Delete the <code class="language-plaintext highlighter-rouge">baseColor</code> word.</li>
+  <li><strong><code class="language-plaintext highlighter-rouge">"fp</code></strong>: Paste the contents of the <code class="language-plaintext highlighter-rouge">f</code> register, i.e. the attribute name, after the cursor, i.e. where <code class="language-plaintext highlighter-rouge">baseColor</code> was before.</li>
+  <li><strong><code class="language-plaintext highlighter-rouge">j0w</code></strong>: Move to the line below, to the beginning of the line and to the beginning of the first word, i.e. the final occurence of <code class="language-plaintext highlighter-rouge">baseColor</code>.</li>
+  <li><strong><code class="language-plaintext highlighter-rouge">dw</code></strong>: Delete the <code class="language-plaintext highlighter-rouge">baseColor</code> word.</li>
+  <li><strong><code class="language-plaintext highlighter-rouge">"fP</code></strong>: Paste again the attribute name before the cursor, i.e. where <code class="language-plaintext highlighter-rouge">baseColor</code> was before.</li>
+  <li><strong><code class="language-plaintext highlighter-rouge">85G</code></strong>: Move to the line containing <code class="language-plaintext highlighter-rouge">lineHeight = 8,</code> (the one that we copied, not the original at the beginning of the file).</li>
+  <li><strong><code class="language-plaintext highlighter-rouge">dd</code></strong>: Delete the line. Now line 85 contains the next attribute and the process is ready to start again.</li>
+</ul>
+
+<p>This sequence may seem quite complex, but it actually consists of movements and actions that a regular Vim user performs all the time and they come up quite naturally. It is not optimized, as some operations may be done with less keystrokes, but this is what I came up with at the moment. The most important part is the use of a specific register for yanking the attribute name, so that it is not overridden by the deletions we make in the process.</p>
+
+<p>After stopping the recording with <code class="language-plaintext highlighter-rouge">q</code>, as mentioned above, we can run again the macro by hitting the following:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@a
+</code></pre></div></div>
+
+<p>The cursor is already at the right position, so the macro will create a copy of the accessor function at the right place, replace all occurences of <code class="language-plaintext highlighter-rouge">baseColor</code> with the correct attribute name, and prepare for the next run. Subsequent runs can also be made with <code class="language-plaintext highlighter-rouge">@@</code>, for quicker typing.</p>
+
+<p>After all accessor functions were inserted, the copied list of attribute names and values was already deleted, so the job was done! The result looked like this:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>function exampleGlyph() {
+
+	// Glyph attributes
+	let baseColor = "gray",
+		lineHeight = 8,
+		A = d =&gt; 0,
+		B = d =&gt; 10,
+		C = d =&gt; 20,
+		D = d =&gt; 30,
+		E = d =&gt; 40,
+		F = d =&gt; 50,
+		height = d =&gt; 10,
+		color = d =&gt; "lightsteelblue"
+
+	function chart(selection) {
+		// ...
+	}
+
+	chart.baseColor = function(value) {
+		if (!arguments.length) return baseColor;
+		baseColor = value;
+		return chart;
+	}
+
+	chart.lineHeight = function(value) {
+		if (!arguments.length) return lineHeight;
+		lineHeight = value;
+		return chart;
+	}
+
+	chart.rectHeight = function(value) {
+		if (!arguments.length) return rectHeight;
+		rectHeight = value;
+		return chart;
+	}
+
+	chart.A = function(value) {
+		if (!arguments.length) return A;
+		A = value;
+		return chart;
+	}
+
+	chart.B = function(value) {
+		if (!arguments.length) return B;
+		B = value;
+		return chart;
+	}
+
+	chart.C = function(value) {
+		if (!arguments.length) return C;
+		C = value;
+		return chart;
+	}
+
+	chart.D = function(value) {
+		if (!arguments.length) return D;
+		D = value;
+		return chart;
+	}
+
+	chart.E = function(value) {
+		if (!arguments.length) return E;
+		E = value;
+		return chart;
+	}
+
+	chart.F = function(value) {
+		if (!arguments.length) return F;
+		F = value;
+		return chart;
+	}
+
+	chart.height = function(value) {
+		if (!arguments.length) return height;
+		height = value;
+		return chart;
+	}
+
+	chart.color = function(value) {
+		if (!arguments.length) return color;
+		color = value;
+		return chart;
+	}
+
+	return chart
+}
+
+</code></pre></div></div>
+
+<p>Thanks for reading! I hope this helps you in your editing!</p>
+
+:ET

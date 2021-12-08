@@ -1,2 +1,9 @@
-.current {
-  color: green; }
+body { margin: auto; max-width: 700px; font-size: 18px; line-height: 1.6; }
+
+.current { color: green; }
+
+pre.highlight { background-color: #F6F6F6; padding: 5px; border: 1px solid lightgray; border-radius: 5px; font-size: 16px; }
+
+code.highlighter-rouge { font-size: 18px; }
+
+/*# sourceMappingURL=styles.css.map */
